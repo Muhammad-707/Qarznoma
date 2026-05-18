@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { LayoutGrid, List, Plus, Search } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type { RootState, AppDispatch } from '@/store/store';
 import { fetchProducts, deleteProduct, setSearchQuery } from '@/reducer/UserSlice';
@@ -25,6 +26,7 @@ export const UserList: React.FC = () => {
     add: false,
     edit: false,
     info: false,
+    delete: false,
   });
 
   const [activeProduct, setActiveProduct] = useState<IProduct | null>(null);
@@ -40,18 +42,21 @@ export const UserList: React.FC = () => {
     }
   }, [items]);
 
-  const handleOpenModal = (type: 'add' | 'edit' | 'info', product: IProduct | null = null) => {
+  const handleOpenModal = (type: 'add' | 'edit' | 'info' | 'delete', product: IProduct | null = null) => {
     if (product) setActiveProduct(product);
     setModals(prev => ({ ...prev, [type]: true }));
   };
 
-  const handleCloseModal = (type: 'add' | 'edit' | 'info') => {
+  const handleCloseModal = (type: 'add' | 'edit' | 'info' | 'delete') => {
     setModals(prev => ({ ...prev, [type]: false }));
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm(t('Are you sure you want to delete this plant?'))) {
-      dispatch(deleteProduct(id));
+  const handleConfirmDelete = async () => {
+    if (activeProduct) {
+      const productName = isRu && activeProduct.titleRu ? activeProduct.titleRu : activeProduct.title;
+      await dispatch(deleteProduct(activeProduct.id));
+      toast.success(`${productName} ${t('successfully removed')}`);
+      handleCloseModal('delete');
     }
   };
 
@@ -150,7 +155,7 @@ export const UserList: React.FC = () => {
                     product={product}
                     isTable={isTable}
                     onEdit={() => handleOpenModal('edit', product)}
-                    onDelete={() => handleDelete(product.id)}
+                    onDelete={() => handleOpenModal('delete', product)}
                     onInfo={() => handleOpenModal('info', product)}
                   />
                 ))}
@@ -165,7 +170,7 @@ export const UserList: React.FC = () => {
                 product={product}
                 isTable={isTable}
                 onEdit={() => handleOpenModal('edit', product)}
-                onDelete={() => handleDelete(product.id)}
+                onDelete={() => handleOpenModal('delete', product)}
                 onInfo={() => handleOpenModal('info', product)}
               />
             ))}
@@ -189,6 +194,39 @@ export const UserList: React.FC = () => {
         onClose={() => handleCloseModal('info')}
         product={activeProduct}
       />
+
+      {modals.delete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-zinc-950 rounded-3xl max-w-sm w-full p-6 border border-zinc-200 dark:border-zinc-900 shadow-xl">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-2">
+              {t('Are you absolutely sure?')}
+            </h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+              {t('This action will remove')}{' '}
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                "{activeProduct ? (isRu && activeProduct.titleRu ? activeProduct.titleRu : activeProduct.title) : ''}"
+              </span>{' '}
+              {t('from your shopping cart.')}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => handleCloseModal('delete')}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#FF3B30] hover:bg-[#e03126] text-white shadow-sm transition-all"
+              >
+                {t('Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
