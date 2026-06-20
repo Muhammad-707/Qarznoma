@@ -6,17 +6,21 @@ import { Button } from "@/components/ui/button"
 import { useLoginStore } from "@/store/AuthStore/LoginStore"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+
 export default function LogIn() {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = React.useState(false)
   const { login, isLoading, errorText, setErrorText } = useLoginStore()
+
   React.useEffect(() => {
     setErrorText(null)
   }, [setErrorText])
+
   const loginSchema = Yup.object().shape({
     email: Yup.string().email(t("auth.invalidEmail")).required(t("auth.emailRequired")),
     password: Yup.string().min(6, t("auth.passwordMin")).required(t("auth.passwordRequired")),
   })
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -27,6 +31,7 @@ export default function LogIn() {
       login(values).catch(() => {})
     },
   })
+
   return (
     <div className="min-h-screen w-full flex bg-[#020208] overflow-hidden animate-in fade-in duration-700">
       <style>{`
@@ -103,9 +108,20 @@ export default function LogIn() {
               <div className="bg-zinc-950/60 border border-white/5 p-4 rounded-2xl flex flex-col items-center space-y-3 backdrop-blur-md relative overflow-hidden w-[150px]">
                 <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest self-start">{t("auth.fingerprintId")}</span>
                 <div className="relative w-full h-14 flex items-center justify-center overflow-visible">
-                  <svg viewBox="0 0 100 60" className="h-full w-full text-emerald-400 drop-shadow-[0_0_8px_#10b981] overflow-visible">
-                    <circle cx="50" cy="30" r="24" stroke="currentColor" strokeWidth="2" className="stroke-emerald-500" fill="none" />
-                    <circle cx="50" cy="30" r="1.5" className="fill-emerald-500" />
+                  {/* Идеально центрированный круглый отпечаток пальца в стиле Sci-Fi */}
+                  <svg viewBox="0 0 100 60" className="h-full w-full text-emerald-400 drop-shadow-[0_0_8px_#10b981] overflow-visible" fill="none" stroke="currentColor" strokeLinecap="round">
+                    <circle cx="50" cy="30" r="24" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="stroke-emerald-500/30 animate-[spin_20s_infinite_linear]" style={{ transformOrigin: '50px 30px' }} />
+                    <circle cx="50" cy="30" r="26" stroke="currentColor" strokeWidth="0.5" className="stroke-emerald-500/10" />
+                    <g strokeWidth="1.5" className="opacity-95 animate-pulse duration-1000" style={{ transformOrigin: '50px 30px' }}>
+                      <path d="M 48,30 A 2,2 0 1,1 52,30 A 2,2 0 1,1 48,30" />
+                      <path d="M 45,30 A 5,5 0 1,1 55,30 A 5,5 0 1,1 45,30" strokeDasharray="18 4 6 2" />
+                      <path d="M 41,30 A 9,9 0 1,1 59,30 A 9,9 0 1,1 41,30" strokeDasharray="25 5 15 3" />
+                      <path d="M 37,30 A 13,13 0 1,1 63,30 A 13,13 0 1,1 37,30" strokeDasharray="30 4 8 2 12 4" />
+                      <path d="M 33,30 A 17,17 0 1,1 67,30 A 17,17 0 1,1 33,30" strokeDasharray="40 6 20 4" />
+                      <path d="M 29,30 A 21,21 0 1,1 71,30 A 21,21 0 1,1 29,30" strokeDasharray="50 5 10 5" />
+                      <path d="M 47,33 C 48,31 52,31 53,33" strokeWidth="1" />
+                      <path d="M 49,30 L 49,27" strokeWidth="1.2" />
+                    </g>
                   </svg>
                   <div className="absolute left-0 right-0 h-[1.5px] bg-emerald-500 shadow-[0_0_8px_#10b981] animate-laser-scan-fast" />
                 </div>
